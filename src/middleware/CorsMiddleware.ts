@@ -1,6 +1,6 @@
 import cors, { CorsOptionsDelegate } from 'cors';
 
-const allowedOrigin = ['localhost:5000'];
+const allowedOrigin = ['https://chat-backend-jimmi.herokuapp.com', 'localhost:5000'];
 
 const corsOptionResponse = {
     allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'X-Access-Token'],
