@@ -29,7 +29,7 @@ db.on('error', console.error.bind(console, 'connection to database error'));
 
 // Boot express
 const app: Application = express();
-const port = Env.serverPort.production || Env.serverPort.test || Env.serverPort.development;
+const port = process.env.PORT || Env.serverPort.test || Env.serverPort.development;
 
 app.use(HelmetMiddleware);
 app.use(favicon('favicon.png'));
