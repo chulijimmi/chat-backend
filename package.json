@@ -3,7 +3,7 @@
     "version": "1.0.0",
     "description": "Chat App Api",
     "scripts": {
-        "start": "npm run build && npm run serve",
+        "start": "node build/index.js",
         "develop": "nodemon --inspect -e ts,tsx --exec node -r ts-node/register ./src/index.ts",
         "build": "tsc",
         "build:watch": "node --inspect build/index.js",
@@ -11,6 +11,7 @@
         "test": "jest",
         "prettier": "prettier --config .prettierrc.json --write src/**/*.ts",
         "serve": "node build/index.js",
+        "postinstall": "npm run build",
         "heroku-postbuild": "npm install"
     },
     "husky": {
