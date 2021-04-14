@@ -16,25 +16,11 @@ class BaseNameSpace {
       socket.on('disconnect', (reason) => {
         console.log('BaseNamespace:disconnect room', {
           namespace: this.server.name,
+          socket: socket.id,
           log: reason,
         });
-        this.server.emit(`${this.server}:leave`, 'disconnect');
+        this.server.emit(`room:leave`, 'disconnect');
       });
-    });
-    return this.server;
-  }
-
-  /**
-   * Create socket room based on userName and roomName
-   * @param {string} userName
-   * @param {string} roomName
-   */
-  public async createRoom(userName: string, roomName: string) {
-    this.server.on('connection', async (socket) => {
-      const payload = { userName, roomName };
-      const join = await socket.join(roomName);
-      console.log('BaseNamespace:createRoom', { payload, join, socket });
-      return join;
     });
     return this.server;
   }

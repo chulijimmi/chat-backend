@@ -1,7 +1,7 @@
 import { preJoinSchema } from '../schema/JoiSchema';
 import { Namespace } from 'socket.io';
 import BaseNameSpace from './BaseNamespace';
-import { createUserRoom } from '../model/RoomModel';
+import { createUserRoom, listRoom } from '../model/RoomModel';
 
 class RoomNameSpace extends BaseNameSpace {
   constructor(server: Namespace) {
@@ -15,10 +15,10 @@ class RoomNameSpace extends BaseNameSpace {
    */
   public listRoom() {
     this.server.on('connection', (socket) => {
-      socket.on('room:list', (callback) => {
+      socket.on('room:list', async (callback) => {
         try {
           // Send response room list
-          const data = [{ id: 1, name: 'roomA' }];
+          const data = await listRoom();
           callback(data);
         } catch (error) {
           console.log('error', error);
@@ -47,9 +47,27 @@ class RoomNameSpace extends BaseNameSpace {
             const errMessage = { status: 201, error, value };
             return callback(errMessage);
           }
+          console.log('socket:before:join', {
+            server: this.server.name,
+            socket: socket.id,
+          });
           socket.join(value.roomName);
-          console.log('RoomNameSpace:createRoom', { payload, socket });
-          const model = await createUserRoom(value.userName, value.roomName);
+          const model = await createUserRoom(
+            value.userName,
+            value.roomName,
+            socket.id,
+          );
+          this.server
+            .to(`${value.roomName}`)
+            .emit(
+              `room:welcome`,
+              `hi ${value.userName}, welcome to ${value.roomName} room`,
+            );
+          // await this.createRoom(value.userName, value.roomName);
+          console.log('socket:after:join', {
+            server: this.server.name,
+            socket: socket.id,
+          });
           callback(model);
         } catch (error) {
           throw error;

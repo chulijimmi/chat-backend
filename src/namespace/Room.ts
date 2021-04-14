@@ -34,11 +34,16 @@ const Room = (server: Namespace) => {
 
         // Save username and room name
         callback(payload);
-
+        console.log('socket:before:join', { socket });
         // Create room
         socket.join(value.roomName);
-        console.log('join_room', { socket });
-        server.to('Jumping').emit('room:live', 'hi all in jumping');
+        console.log('socket:after:join', { socket });
+        server
+          .to(value.roomName)
+          .emit(
+            'room:welcome',
+            `hi ${value.userName} welcome join ${value.roomName} rooms`,
+          );
         log.push({ id: socket.id, user: value.userName });
       } catch (error) {
         console.log('error_room:join');
