@@ -1,5 +1,5 @@
-import { json } from 'body-parser';
+import { json } from 'body-parser'
 
-const JsonParser = json();
+const JsonParser = json()
 
-export default JsonParser;
+export default JsonParser
