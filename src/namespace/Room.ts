@@ -1,4 +1,3 @@
-import { JoinRoom } from '../model/RoomModel';
 import { Namespace } from 'socket.io';
 import { preJoinSchema } from '../schema/JoiSchema';
 
@@ -34,8 +33,7 @@ const Room = (server: Namespace) => {
         }
 
         // Save username and room name
-        const model = await JoinRoom(value); // [{ id: 1, userName: value.userName, roomName: value.roomName }];
-        callback(model);
+        callback(payload);
 
         // Create room
         socket.join(value.roomName);

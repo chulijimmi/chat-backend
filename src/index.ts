@@ -15,6 +15,7 @@ import {
   MONGO_DB_USERNAME,
 } from './config/Database';
 import RoomNameSpace from './namespace/RoomNameSpace';
+import Room from 'namespace/Room';
 
 // Connection to mongodb
 mongoose.connect(
@@ -61,8 +62,9 @@ const socketOptions = {
 };
 const io = new Server(httpServer, socketOptions);
 const nameSpaceRoom = io.of('/room');
-const room = new RoomNameSpace(nameSpaceRoom);
-room.init();
+Room(nameSpaceRoom);
+// const room = new RoomNameSpace(nameSpaceRoom);
+// room.init();
 
 // Start server
 httpServer.listen(port, () =>
