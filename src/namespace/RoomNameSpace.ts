@@ -1,7 +1,13 @@
 import { preJoinSchema } from '../schema/JoiSchema';
 import { Namespace } from 'socket.io';
 import BaseNameSpace from './BaseNamespace';
-import { createUserRoom, listRoom } from '../model/RoomModel';
+import {
+  createConversation,
+  createUserRoom,
+  getConversation,
+  getUserLogs,
+  listRoom,
+} from '../model/RoomModel';
 
 class RoomNameSpace extends BaseNameSpace {
   constructor(server: Namespace) {
@@ -73,13 +79,47 @@ class RoomNameSpace extends BaseNameSpace {
           throw error;
         }
       });
+
+      socket.on('room:join:logs', async (payload, callback) => {
+        const response = await getUserLogs(payload.user.id, payload.room.id);
+        callback(response);
+      });
     });
+    return this.server;
+  }
+
+  public conversation() {
+    this.server.on('connection', (socket) => {
+      socket.on('room:conversation', async (payload, callback) => {
+        if (typeof callback !== 'function') {
+          return socket.disconnect();
+        }
+        console.log('payload:room:conversation', payload);
+        await createConversation(
+          payload.user.id,
+          payload.room.id,
+          payload.message,
+        );
+        const response = { from: payload.user.userName, says: payload.message };
+        this.server
+          .to(payload.room.roomName)
+          .emit('room:conversation:typing', response);
+        callback(response);
+      });
+
+      socket.on('room:conversation:all', async (payload, callback) => {
+        const response = await getConversation(payload.room.id);
+        callback(response);
+      });
+    });
+
     return this.server;
   }
 
   public init() {
     this.listRoom();
     this.joinRoom();
+    this.conversation();
   }
 }
 

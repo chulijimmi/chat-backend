@@ -4,7 +4,6 @@ class BaseNameSpace {
   server: Namespace;
   constructor(name: Namespace) {
     this.server = name;
-    console.log('server', this.server);
   }
 
   /**

@@ -15,7 +15,6 @@ import {
   MONGO_DB_USERNAME,
 } from './config/Database';
 import RoomNameSpace from './namespace/RoomNameSpace';
-import Room from './namespace/Room';
 
 // Connection to mongodb
 mongoose.connect(

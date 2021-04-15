@@ -1,6 +1,8 @@
 import UserSchema from '../schema/UserSchema';
 import RoomSchema from '../schema/RoomSchema';
 import UserLogSchema from '../schema/UserLogSchema';
+import ConversationSchema from '../schema/ConversationSchema';
+import _ from 'lodash';
 
 type IUser = {
   userName: string;
@@ -58,6 +60,17 @@ export async function createUserRoom(
   roomName: string,
   socketId: string,
 ): Promise<any> {
+  let response = {
+    user: {
+      userName: userName,
+      id: '',
+    },
+    room: {
+      roomName: roomName,
+      id: '',
+    },
+    socketId: socketId,
+  };
   const docUser = { userName, createdAt: new Date() };
   const docRoom = { roomName, createdAt: new Date() };
 
@@ -86,6 +99,8 @@ export async function createUserRoom(
           log.save(function (err) {
             console.log('RoomModel:save:log', err);
           });
+          response.user.id = user._id;
+          response.room.id = room._id;
         });
       } else {
         const docLog = {
@@ -98,6 +113,8 @@ export async function createUserRoom(
         log.save(function (err) {
           console.log('RoomModel:save:log', err);
         });
+        response.user.id = user._id;
+        response.room.id = isExistRoom[0]._doc._id;
       }
     });
   } else {
@@ -117,6 +134,8 @@ export async function createUserRoom(
         log.save(function (err) {
           console.log('RoomModel:save:log', err);
         });
+        response.user.id = isExistUser[0]._doc._id;
+        response.room.id = room._id;
       });
     } else {
       const docLog = {
@@ -129,8 +148,89 @@ export async function createUserRoom(
       log.save(function (err) {
         console.log('RoomModel:save:log', err);
       });
+      response.user.id = isExistUser[0]._doc._id;
+      response.room.id = isExistRoom[0]._doc._id;
     }
   }
 
-  return { data: { userName, roomName, socketId } };
+  return { data: response };
+}
+
+/**
+ * Create conversation to persist in database
+ * @param {string} userId
+ * @param {string} roomId
+ * @param {string} message
+ * @return {void}
+ */
+export async function createConversation(
+  userId: string,
+  roomId: string,
+  message: string,
+): Promise<any> {
+  const doc = {
+    user: userId,
+    room: roomId,
+    message,
+    createdAt: new Date(),
+  };
+
+  const conversation = new ConversationSchema(doc);
+  conversation.save((err) => {
+    console.log('error:conversation:save', err);
+  });
+}
+
+type IConversation = {
+  id: string;
+  message: string;
+  createdAt: Date;
+  room: any;
+  user: any;
+};
+
+/**
+ * Retreive conversation in room.
+ * This model provide to client side in start up the app
+ * @param roomId
+ * @returns
+ */
+export async function getConversation(roomId: string) {
+  let response: IConversation[] = [];
+  const model = await ConversationSchema.find()
+    .populate({
+      path: 'room',
+      match: { _id: { $eq: roomId } },
+    })
+    .populate('user')
+    .sort({ createdAt: 'asc' })
+    .exec();
+  model.forEach((item, index) => {
+    response[index] = {
+      id: item.id,
+      message: item.message,
+      createdAt: item.createdAt,
+      room: item.room,
+      user: item.user,
+    };
+  });
+  return response;
+}
+
+export async function getUserLogs(userId: string, roomId: string) {
+  const model = await UserLogSchema.find()
+    .populate({
+      path: 'room',
+      match: { _id: { $eq: roomId } },
+    })
+    .populate({
+      path: 'user',
+      match: { _id: { $ne: userId } },
+    })
+    .sort({ createdAt: 'desc' })
+    .exec();
+  const newModel = _.uniqBy(model, (e) => {
+    return e.user;
+  });
+  return newModel.filter((i) => i.user !== null && i.room !== null);
 }
