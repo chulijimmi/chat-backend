@@ -4,6 +4,7 @@ import {
   COLLECTION_USER_LOG,
 } from '../config/Database';
 import { model, Schema, Document } from 'mongoose';
+import { debug } from '../utils/tools';
 
 export interface IUserLog extends Document {
   user: Schema.Types.ObjectId;
@@ -34,7 +35,7 @@ const UserLogSchema = new Schema(
 );
 
 UserLogSchema.pre('save', function (this: IUserLog, next) {
-  console.log('pre save user log schema');
+  debug('pre save user log schema', this);
   next();
 });
 

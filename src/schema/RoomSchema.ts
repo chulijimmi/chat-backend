@@ -1,6 +1,7 @@
 import { COLLECTION_ROOM } from '../config/Database';
-import { model, Schema, Document } from 'mongoose';
+import { model, Schema } from 'mongoose';
 import { IUser } from '../schema/UserSchema';
+import { debug } from '../utils/tools';
 
 export interface IRoom extends IUser {
   roomName: string;
@@ -22,7 +23,7 @@ const RoomSchema = new Schema(
 );
 
 RoomSchema.pre('save', function (this: IRoom, next) {
-  console.log('pre save room schema', this);
+  debug('pre save room schema', this);
   next();
 });
 

@@ -26,7 +26,7 @@ mongoose.connect(
     dbName: MONGO_DB_NAME,
   },
   () => {
-    console.log('connect to database');
+    console.log('connect to database', {});
   },
 );
 const db = mongoose.connection;

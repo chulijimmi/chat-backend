@@ -1,5 +1,6 @@
 import { COLLECTION_USER } from '../config/Database';
 import { model, Schema, Document } from 'mongoose';
+import { debug } from '../utils/tools';
 
 export interface IUser extends Document {
   userName: string;
@@ -21,7 +22,7 @@ const UserSchema = new Schema(
 );
 
 UserSchema.pre('save', function (this: IUser, next) {
-  console.log('pre save user schema');
+  debug('pre save user schema', this);
   next();
 });
 

@@ -1,4 +1,5 @@
 import { Namespace } from 'socket.io';
+import { debug } from '../utils/tools';
 
 class BaseNameSpace {
   server: Namespace;
@@ -13,7 +14,7 @@ class BaseNameSpace {
   public disconnect() {
     this.server.on('connection', (socket) => {
       socket.on('disconnect', (reason) => {
-        console.log('BaseNamespace:disconnect room', {
+        debug('BaseNamespace:disconnect room', {
           namespace: this.server.name,
           socket: socket.id,
           log: reason,

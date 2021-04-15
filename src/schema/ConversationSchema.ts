@@ -4,6 +4,7 @@ import {
   COLLECTION_CONVERSATION,
 } from '../config/Database';
 import { model, Schema, Document } from 'mongoose';
+import { debug } from '../utils/tools';
 
 export interface IConversation extends Document {
   user: Schema.Types.ObjectId;
@@ -34,7 +35,7 @@ const ConversationSchema = new Schema(
 );
 
 ConversationSchema.pre('save', function (this: IConversation, next) {
-  console.log('pre save conversation schema');
+  debug('pre save conversation schema', this);
   next();
 });
 

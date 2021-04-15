@@ -3,6 +3,7 @@ import RoomSchema from '../schema/RoomSchema';
 import UserLogSchema from '../schema/UserLogSchema';
 import ConversationSchema from '../schema/ConversationSchema';
 import _ from 'lodash';
+import { debug } from '../utils/tools';
 
 type IUser = {
   userName: string;
@@ -16,7 +17,7 @@ type IUser = {
  */
 export async function findUserName(doc: IUser): Promise<any> {
   const data = await UserSchema.find({ userName: doc.userName }).exec();
-  console.log('data:findUserName', data);
+  debug('data:findUserName', data);
   if (data?.length > Number(0)) {
     return data;
   }
@@ -34,7 +35,7 @@ type IRoom = {
  */
 export async function findRoomName(doc: IRoom): Promise<any> {
   const data = await RoomSchema.find({ roomName: doc.roomName }).exec();
-  console.log('data:findRoomName', data);
+  debug('data:findRoomName', data);
   if (data?.length > Number(0)) {
     return data;
   }
@@ -81,13 +82,13 @@ export async function createUserRoom(
     const user = new UserSchema(docUser);
     user.save(async function (err) {
       if (err) {
-        console.log('RoomModel1:save:user', err);
+        debug('RoomModel1:save:user', err);
       }
       if (isExistRoom === false) {
         const room = new RoomSchema(docRoom);
         room.save(function (err) {
           if (err) {
-            console.log('RoomModel:save:room', err);
+            debug('RoomModel:save:room', err);
           }
           const docLog = {
             user: user._id,
@@ -97,7 +98,7 @@ export async function createUserRoom(
           };
           const log = new UserLogSchema(docLog);
           log.save(function (err) {
-            console.log('RoomModel:save:log', err);
+            debug('RoomModel:save:log', err);
           });
           response.user.id = user._id;
           response.room.id = room._id;
@@ -111,7 +112,7 @@ export async function createUserRoom(
         };
         const log = new UserLogSchema(docLog);
         log.save(function (err) {
-          console.log('RoomModel:save:log', err);
+          debug('RoomModel:save:log', err);
         });
         response.user.id = user._id;
         response.room.id = isExistRoom[0]._doc._id;
@@ -122,7 +123,7 @@ export async function createUserRoom(
       const room = new RoomSchema(docRoom);
       room.save(function (err) {
         if (err) {
-          console.log('RoomModel:save:room', err);
+          debug('RoomModel:save:room', err);
         }
         const docLog = {
           user: isExistUser[0]._doc._id,
@@ -132,7 +133,7 @@ export async function createUserRoom(
         };
         const log = new UserLogSchema(docLog);
         log.save(function (err) {
-          console.log('RoomModel:save:log', err);
+          debug('RoomModel:save:log', err);
         });
         response.user.id = isExistUser[0]._doc._id;
         response.room.id = room._id;
@@ -146,7 +147,7 @@ export async function createUserRoom(
       };
       const log = new UserLogSchema(docLog);
       log.save(function (err) {
-        console.log('RoomModel:save:log', err);
+        debug('RoomModel:save:log', err);
       });
       response.user.id = isExistUser[0]._doc._id;
       response.room.id = isExistRoom[0]._doc._id;
@@ -177,7 +178,7 @@ export async function createConversation(
 
   const conversation = new ConversationSchema(doc);
   conversation.save((err) => {
-    console.log('error:conversation:save', err);
+    debug('error:conversation:save', err);
   });
 }
 
@@ -193,7 +194,7 @@ type IConversation = {
  * Retreive conversation in room.
  * This model provide to client side in start up the app
  * @param roomId
- * @returns
+ * @returns {Array}
  */
 export async function getConversation(roomId: string) {
   let response: IConversation[] = [];
@@ -217,6 +218,12 @@ export async function getConversation(roomId: string) {
   return response;
 }
 
+/**
+ * Get user logs data to check the latest user join
+ * @param userId
+ * @param roomId
+ * @returns {Array}
+ */
 export async function getUserLogs(userId: string, roomId: string) {
   const model = await UserLogSchema.find()
     .populate({
@@ -233,4 +240,23 @@ export async function getUserLogs(userId: string, roomId: string) {
     return e.user;
   });
   return newModel.filter((i) => i.user !== null && i.room !== null);
+}
+
+/**
+ * Get last login by user username
+ * @param userName
+ * @returns {Array}
+ */
+export async function getLastLogin(userName: string) {
+  const model = await UserLogSchema.find()
+    .populate({
+      path: 'room',
+    })
+    .populate({
+      path: 'user',
+      match: { userName: { $eq: userName } },
+    })
+    .sort({ createdAt: 'desc' })
+    .exec();
+  return model.filter((i) => i.user !== null);
 }

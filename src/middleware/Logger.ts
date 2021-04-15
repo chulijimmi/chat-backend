@@ -1,11 +1,12 @@
-import { Request, Response, NextFunction } from 'express'
+import { Request, Response, NextFunction } from 'express';
+import { debug } from '../utils/tools';
 const Logger = (req: Request, res: Response, next: NextFunction): void => {
   try {
-    console.log('logger-middleware:', Date.now())
-    next()
+    debug('logger-middleware:', Date.now());
+    next();
   } catch (error) {
-    console.log('error', error)
+    debug('error', error);
   }
-}
+};
 
-export default Logger
+export default Logger;

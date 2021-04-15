@@ -8,6 +8,7 @@ import {
   getUserLogs,
   listRoom,
 } from '../model/RoomModel';
+import { debug } from '../utils/tools';
 
 class RoomNameSpace extends BaseNameSpace {
   constructor(server: Namespace) {
@@ -27,7 +28,7 @@ class RoomNameSpace extends BaseNameSpace {
           const data = await listRoom();
           callback(data);
         } catch (error) {
-          console.log('error', error);
+          debug('error', error);
         }
       });
     });
@@ -53,7 +54,7 @@ class RoomNameSpace extends BaseNameSpace {
             const errMessage = { status: 201, error, value };
             return callback(errMessage);
           }
-          console.log('socket:before:join', {
+          debug('socket:before:join', {
             server: this.server.name,
             socket: socket.id,
           });
@@ -70,7 +71,7 @@ class RoomNameSpace extends BaseNameSpace {
               `hi ${value.userName}, welcome to ${value.roomName} room`,
             );
           // await this.createRoom(value.userName, value.roomName);
-          console.log('socket:after:join', {
+          debug('socket:after:join', {
             server: this.server.name,
             socket: socket.id,
           });
@@ -94,7 +95,7 @@ class RoomNameSpace extends BaseNameSpace {
         if (typeof callback !== 'function') {
           return socket.disconnect();
         }
-        console.log('payload:room:conversation', payload);
+        debug('payload:room:conversation', payload);
         await createConversation(
           payload.user.id,
           payload.room.id,
