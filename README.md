@@ -16,6 +16,9 @@ This env what we need:
 - DEV_MONGODB_HOST=''
 - DEV_MONGODB_ARG=''
 
+We use dotenv to create the environment in development, but before that make sure that you have process.env.NODE_ENV="development".
+After that, you can create .env files on the root project.
+
 ## Table of Contents
 
 - [Database](#database)
