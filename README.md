@@ -3,6 +3,8 @@
 ## Overview
 
 chat-backend user socket.io library to process the websocket endpoint.
+This project deploy to heroku cloud, but you can not check or hit the api because only trusted link approve by cors origin.
+Deployment heroku https://chat-backend-jimmi.herokuapp.com/ but you can visit the front end side on https://hungry-nobel-29f7e8.netlify.app/
 
 Development guide:
 Before run this app, make sure that you already have env variables in your machine.
