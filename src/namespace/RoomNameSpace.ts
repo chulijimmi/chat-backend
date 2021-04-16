@@ -42,8 +42,8 @@ class RoomNameSpace extends BaseNameSpace {
    * @payload {Object}
    * @return {Namespace} server object
    */
-  public joinRoom() {
-    this.server.on('connection', (socket) => {
+  public async joinRoom() {
+    this.server.on('connection', async (socket) => {
       socket.on('room:join', async (payload, callback) => {
         try {
           if (typeof callback !== 'function') {
@@ -64,6 +64,7 @@ class RoomNameSpace extends BaseNameSpace {
             value.roomName,
             socket.id,
           );
+
           this.server
             .to(`${value.roomName}`)
             .emit(
@@ -80,7 +81,45 @@ class RoomNameSpace extends BaseNameSpace {
           throw error;
         }
       });
+    });
+    return this.server;
+  }
 
+  public conversation() {
+    this.server.on('connection', (socket) => {
+      try {
+        socket.on('room:conversation', async (payload, callback) => {
+          if (typeof callback !== 'function') {
+            return socket.disconnect();
+          }
+          debug('payload:room:conversation', payload);
+          await createConversation(
+            payload.user.id,
+            payload.room.id,
+            payload.message,
+          );
+          const response = {
+            from: payload.user.userName,
+            says: payload.message,
+          };
+          this.server
+            .to(payload.room.roomName)
+            .emit('room:conversation:typing', response);
+          callback(response);
+        });
+        socket.on('room:conversation:all', async (payload, callback) => {
+          const response = await getConversation(payload.room.id);
+          callback(response);
+        });
+      } catch (error) {
+        throw error;
+      }
+    });
+    return this.server;
+  }
+
+  public joinLogs() {
+    this.server.on('connection', (socket) => {
       socket.on('room:join:logs', async (payload, callback) => {
         const response = await getUserLogs(payload.user.id, payload.room.id);
         callback(response);
@@ -89,38 +128,11 @@ class RoomNameSpace extends BaseNameSpace {
     return this.server;
   }
 
-  public conversation() {
-    this.server.on('connection', (socket) => {
-      socket.on('room:conversation', async (payload, callback) => {
-        if (typeof callback !== 'function') {
-          return socket.disconnect();
-        }
-        debug('payload:room:conversation', payload);
-        await createConversation(
-          payload.user.id,
-          payload.room.id,
-          payload.message,
-        );
-        const response = { from: payload.user.userName, says: payload.message };
-        this.server
-          .to(payload.room.roomName)
-          .emit('room:conversation:typing', response);
-        callback(response);
-      });
-
-      socket.on('room:conversation:all', async (payload, callback) => {
-        const response = await getConversation(payload.room.id);
-        callback(response);
-      });
-    });
-
-    return this.server;
-  }
-
   public init() {
     this.listRoom();
     this.joinRoom();
     this.conversation();
+    this.joinLogs();
   }
 }
 

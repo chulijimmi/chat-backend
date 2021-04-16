@@ -77,83 +77,53 @@ export async function createUserRoom(
 
   const isExistUser = await findUserName(docUser);
   const isExistRoom = await findRoomName(docRoom);
+  console.log('check', { isExistUser, isExistRoom });
 
   if (isExistUser === false) {
     const user = new UserSchema(docUser);
-    user.save(async function (err) {
-      if (err) {
-        debug('RoomModel1:save:user', err);
-      }
-      if (isExistRoom === false) {
-        const room = new RoomSchema(docRoom);
-        room.save(function (err) {
-          if (err) {
-            debug('RoomModel:save:room', err);
-          }
-          const docLog = {
-            user: user._id,
-            room: room._id,
-            socketId: socketId,
-            lastJoin: new Date(),
-          };
-          const log = new UserLogSchema(docLog);
-          log.save(function (err) {
-            debug('RoomModel:save:log', err);
-          });
-          response.user.id = user._id;
-          response.room.id = room._id;
-        });
-      } else {
-        const docLog = {
-          user: user._id,
-          room: isExistRoom[0]._doc._id,
-          socketId: socketId,
-          lastJoin: new Date(),
-        };
-        const log = new UserLogSchema(docLog);
-        log.save(function (err) {
-          debug('RoomModel:save:log', err);
-        });
-        response.user.id = user._id;
-        response.room.id = isExistRoom[0]._doc._id;
-      }
-    });
-  } else {
+    await user.save();
+    const room = new RoomSchema(docRoom);
     if (isExistRoom === false) {
-      const room = new RoomSchema(docRoom);
-      room.save(function (err) {
-        if (err) {
-          debug('RoomModel:save:room', err);
-        }
-        const docLog = {
-          user: isExistUser[0]._doc._id,
-          room: room._id,
-          socketId: socketId,
-          lastJoin: new Date(),
-        };
-        const log = new UserLogSchema(docLog);
-        log.save(function (err) {
-          debug('RoomModel:save:log', err);
-        });
-        response.user.id = isExistUser[0]._doc._id;
-        response.room.id = room._id;
-      });
-    } else {
-      const docLog = {
-        user: isExistUser[0]._doc._id,
-        room: isExistRoom[0]._doc._id,
-        socketId: socketId,
-        lastJoin: new Date(),
-      };
-      const log = new UserLogSchema(docLog);
-      log.save(function (err) {
-        debug('RoomModel:save:log', err);
-      });
-      response.user.id = isExistUser[0]._doc._id;
-      response.room.id = isExistRoom[0]._doc._id;
+      await room.save();
     }
+    const docLog = {
+      user: user._id,
+      room: room._id,
+      socketId: socketId,
+      lastJoin: new Date(),
+    };
+    const log = new UserLogSchema(docLog);
+    await log.save();
+    response.user.id = user._id.toString();
+    response.room.id = room._id.toString();
+  } else if (isExistRoom === false) {
+    const user = isExistUser[0];
+    const room = new RoomSchema(docRoom);
+    await room.save();
+    const docLog = {
+      user: user._id,
+      room: room._id,
+      socketId: socketId,
+      lastJoin: new Date(),
+    };
+    const log = new UserLogSchema(docLog);
+    await log.save();
+    response.user.id = user._id.toString();
+    response.room.id = room._id.toString();
+  } else {
+    const user = isExistUser[0];
+    const room = isExistRoom[0];
+    const docLog = {
+      user: user._id,
+      room: room._id,
+      socketId: socketId,
+      lastJoin: new Date(),
+    };
+    const log = new UserLogSchema(docLog);
+    response.user.id = user._id.toString();
+    response.room.id = room._id.toString();
+    await log.save();
   }
-
   return { data: response };
 }
 
